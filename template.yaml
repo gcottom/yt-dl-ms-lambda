@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  yt-dl-ms-app
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 120
+    MemorySize: 1739
+
+Resources:
+  YtDlSqs:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: "yt-dl-ms-conversion"
+      VisibilityTimeout: 120
+  YtDlApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowOrigin: "'*'"
+        AllowMethods: "'GET,OPTIONS,PUT'"
+  GetTrackFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: yt-dl-ms-lambda/cmd/functions/get_track
+      Handler: get_track
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Events:
+        CatchAll:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /gettrack/{videoid}
+            Method: GET
+            RestApiId: !Ref YtDlApi
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt YtDlSqs.QueueName
+        - S3CrudPolicy:
+            BucketName: yt-dl-ui-downloads
+  GetTrackConvertedFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: yt-dl-ms-lambda/cmd/functions/get_track_converted
+      Handler: get_track_converted
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Events:
+        CatchAll:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /gettrackconverted/{s3id}
+            Method: GET
+            RestApiId: !Ref YtDlApi
+      Policies:
+        - S3CrudPolicy:
+            BucketName: yt-dl-ui-downloads
+  SetMetaFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: yt-dl-ms-lambda/cmd/functions/set_meta
+      Handler: set_meta
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Events:
+        CatchAll:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /setmeta
+            Method: PUT
+            RestApiId: !Ref YtDlApi
+      Policies:
+        - S3CrudPolicy:
+            BucketName: yt-dl-ui-downloads
+  ConvertTrackFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: yt-dl-ms-lambda/cmd/functions/convert_track
+      Handler: convert_track
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Events:
+        SQSMessagePublished:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt YtDlSqs.Arn
+            BatchSize: 1
+      Policies:
+        - SQSPollerPolicy:
+            QueueName: !GetAtt YtDlSqs.QueueName
+        - S3CrudPolicy:
+            BucketName: yt-dl-ui-downloads
