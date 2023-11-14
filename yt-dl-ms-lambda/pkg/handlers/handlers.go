@@ -45,7 +45,7 @@ func GetTrackHandler(req Request) (*Response, error) {
 		log.Println(err)
 		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
-	queueUrl := "https://sqs.us-east-2.amazonaws.com/112343695294/yt-dl-ms-conversion"
+	queueUrl := "https://sqs.us-east-2.amazonaws.com/112343695294/yt-dl-ms-conversion.fifo"
 	conf := aws.Config{Region: aws.String(conf.Region)}
 	sess := session.Must(session.NewSession(&conf))
 	sqsClient := sqs.New(sess)
@@ -54,8 +54,9 @@ func GetTrackHandler(req Request) (*Response, error) {
 		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
 	_, err = sqsClient.SendMessage(&sqs.SendMessageInput{
-		QueueUrl:    &queueUrl,
-		MessageBody: aws.String(u.String()),
+		QueueUrl:       &queueUrl,
+		MessageBody:    aws.String(u.String()),
+		MessageGroupId: aws.String("convertGroup"),
 	})
 	if err != nil {
 		log.Println(err)

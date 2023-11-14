@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   yt-dl-ms-app
@@ -6,22 +6,98 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 120
-    MemorySize: 1739
+    Timeout: 30
+    MemorySize: 128
 
 Resources:
+  MyLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join
+        - '-'
+        - - !Ref YtDlApi
+          - access-logs
+  CustomJWTAuthFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ["apigateway.amazonaws.com", "lambda.amazonaws.com"]
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: AuthInvokePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt JWTAuthFunction.Arn
+
   YtDlSqs:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: "yt-dl-ms-conversion"
+      QueueName: yt-dl-ms-conversion.fifo
       VisibilityTimeout: 120
+      FifoQueue: true
+      ContentBasedDeduplication: true
+  ApiCWLRoleArn:
+    Type: AWS::ApiGateway::Account
+    Properties: 
+      CloudWatchRoleArn: !GetAtt CloudWatchRole.Arn
+
+# IAM Role for API Gateway + CloudWatch Logging
+  CloudWatchRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            Action: 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+        Path: /
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
   YtDlApi:
     Type: AWS::Serverless::Api
+    DependsOn: ApiCWLRoleArn
     Properties:
       StageName: Prod
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          LoggingLevel: INFO
+      AccessLogSetting:
+        DestinationArn: !GetAtt MyLogGroup.Arn
+        Format: $context.extendedRequestId $context.identity.sourceIp $context.identity.caller $context.identity.user [$context.requestTime] "$context.httpMethod $context.resourcePath $context.protocol" $context.status $context.responseLength $context.requestId
+
       Cors:
         AllowOrigin: "'*'"
         AllowMethods: "'GET,OPTIONS,PUT'"
+        AllowHeaders: "'Authorization'"
+      Auth:
+        DefaultAuthorizer: LambdaTokenAuthorizer
+        Authorizers:
+          LambdaTokenAuthorizer:
+            FunctionArn: !GetAtt JWTAuthFunction.Arn
+            FunctionPayloadType: TOKEN
+            Identity:
+              Header: Authorization
+            FunctionInvokeRole: !GetAtt CustomJWTAuthFunctionRole.Arn
+        AddDefaultAuthorizerToCorsPreflight: False
+  JWTAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: auth
+      Handler: auth
+      Runtime: go1.x
+      Architectures:
+        - x86_64
   GetTrackFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -42,6 +118,7 @@ Resources:
             QueueName: !GetAtt YtDlSqs.QueueName
         - S3CrudPolicy:
             BucketName: yt-dl-ui-downloads
+
   GetTrackConvertedFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -60,6 +137,7 @@ Resources:
       Policies:
         - S3CrudPolicy:
             BucketName: yt-dl-ui-downloads
+
   SetMetaFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -78,6 +156,7 @@ Resources:
       Policies:
         - S3CrudPolicy:
             BucketName: yt-dl-ui-downloads
+
   ConvertTrackFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -86,6 +165,7 @@ Resources:
       Runtime: go1.x
       Architectures:
         - x86_64
+      MemorySize: 1739
       Events:
         SQSMessagePublished:
           Type: SQS
