@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -24,7 +25,7 @@ func Handler(ctx context.Context, request events.APIGatewayCustomAuthorizerReque
 		//pol := generatePolicy("user", "Deny", request.MethodArn)
 		return events.APIGatewayCustomAuthorizerResponse{Context: map[string]interface{}{"message": "MISSING_AUTHENTICATION_TOKEN", "error_description": "token missing", "description": "token not provided in authorization header"}}, errors.New("Missing_Authentication_Token")
 	}
-
+	secret := os.Getenv("JWT_SECRET")
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte("A Secret"), nil // Replace with your actual secret key
 	})
