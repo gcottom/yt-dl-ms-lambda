@@ -75,7 +75,6 @@ Resources:
       AccessLogSetting:
         DestinationArn: !GetAtt MyLogGroup.Arn
         Format: $context.extendedRequestId $context.identity.sourceIp $context.identity.caller $context.identity.user [$context.requestTime] "$context.httpMethod $context.resourcePath $context.protocol" $context.status $context.responseLength $context.requestId
-
       Cors:
         AllowOrigin: "'*'"
         AllowMethods: "'GET,OPTIONS,PUT'"
@@ -100,7 +99,7 @@ Resources:
         - x86_64
       Environment:
         Variables:
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_SECRET: !Ref JwtSec
   GetTrackFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -180,3 +179,6 @@ Resources:
             QueueName: !GetAtt YtDlSqs.QueueName
         - S3CrudPolicy:
             BucketName: yt-dl-ui-downloads
+Parameters:
+  JwtSec:
+    Type: String
