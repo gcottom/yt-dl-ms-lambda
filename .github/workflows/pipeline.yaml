@@ -23,7 +23,7 @@ jobs:
                     "yt-dl-ms-lambda"
                     "auth"
                 )
-                for folder in "$folders[@]"; do
+                for folder in "${folders[@]}"; do
                     cd $folder
                     go mod tidy -go=1.21
                     cd ../..
