@@ -33,6 +33,6 @@ jobs:
                 mkdir bin
                 cd bin
                 wget https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz
-                tar -xf ffmpeg-git-amd64-static.tar.xz -C ../.aws-sam/ConvertTrackFunction/ffmpeg
+                tar -xf ffmpeg-git-amd64-static.tar.xz -C ../.aws-sam/build/ConvertTrackFunction/ffmpeg
 
             - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name yt-dl-ms --region us-east-2
