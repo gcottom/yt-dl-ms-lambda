@@ -182,3 +182,5 @@ Resources:
 Parameters:
   JwtSec:
     Type: String
+    Description: Jwt Secret
+    Defaul: default value
