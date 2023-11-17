@@ -6,13 +6,27 @@ jobs:
     build-deploy:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-go@v4
-            - uses: aws-actions/setup-sam@v1
-            - uses: aws-actions/configure-aws-credentials@v1
+            - uses: actions/checkout@v3
+            - uses: aws-actions/setup-sam@v2
+              with:
+                use-installer: true
+            - uses: aws-actions/configure-aws-credentials@v2
               with:
                 aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
                 aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                 aws-region: us-east-2
-            - run: sam build --use-container
+            - uses: actions/setup-go@v2
+              with:
+                go-version: '1.21'
+            - run: |
+                folders=(
+                    "yt-dl-ms-lambda"
+                    "auth"
+                )
+                for folder in "$folders[@]"; do
+                    cd $folder
+                    go mod tidy -go=1.21
+                    cd ../..
+                done
+            - run: sam build
             - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name yt-dl-ms --region us-east-2
