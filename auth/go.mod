@@ -1,6 +1,6 @@
 module github.com/gcottom/yt-dl-ms-aws-auth
 
-go 1.21.3
+go 1.21
 
 require github.com/aws/aws-lambda-go v1.41.0
 
