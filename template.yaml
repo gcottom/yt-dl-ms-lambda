@@ -93,8 +93,8 @@ Resources:
   JWTAuthFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: yt-dl-ms-aws-auth
-      Handler: yt-dl-ms-aws-auth
+      CodeUri: yt-dl-ms-lambda/cmd/functions
+      Handler: auth
       Runtime: go1.x
       Architectures:
         - x86_64
@@ -104,7 +104,7 @@ Resources:
   GetTrackFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: yt-dl-ms-lambda/cmd/functions/get_track
+      CodeUri: yt-dl-ms-lambda/cmd/functions
       Handler: get_track
       Runtime: go1.x
       Architectures:
@@ -125,7 +125,7 @@ Resources:
   GetTrackConvertedFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: yt-dl-ms-lambda/cmd/functions/get_track_converted
+      CodeUri: yt-dl-ms-lambda/cmd/functions
       Handler: get_track_converted
       Runtime: go1.x
       Architectures:
@@ -144,7 +144,7 @@ Resources:
   SetMetaFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: yt-dl-ms-lambda/cmd/functions/set_meta
+      CodeUri: yt-dl-ms-lambda/cmd/functions
       Handler: set_meta
       Runtime: go1.x
       Architectures:
@@ -163,7 +163,7 @@ Resources:
   ConvertTrackFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: yt-dl-ms-lambda/cmd/functions/convert_track
+      CodeUri: yt-dl-ms-lambda/cmd/functions
       Handler: convert_track
       Runtime: go1.x
       Architectures:
