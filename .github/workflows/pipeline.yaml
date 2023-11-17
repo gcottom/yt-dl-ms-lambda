@@ -26,7 +26,7 @@ jobs:
                 for folder in "${folders[@]}"; do
                     cd $folder
                     go mod tidy -go=1.21
-                    cd ../..
+                    cd ../
                 done
             - run: sam build
             - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name yt-dl-ms --region us-east-2
