@@ -93,7 +93,7 @@ Resources:
   JWTAuthFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: auth
+      CodeUri: yt-dl-ms-aws-auth
       Handler: auth
       Runtime: go1.x
       Architectures:
