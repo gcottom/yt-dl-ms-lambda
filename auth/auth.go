@@ -26,7 +26,7 @@ func Handler(ctx context.Context, request events.APIGatewayCustomAuthorizerReque
 	}
 
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte("A Dirty Dummy Secret"), nil // Replace with your actual secret key
+		return []byte("A Secret"), nil // Replace with your actual secret key
 	})
 
 	if err != nil {
