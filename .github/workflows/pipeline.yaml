@@ -21,7 +21,7 @@ jobs:
             - run: |
                 folders=(
                     "yt-dl-ms-lambda"
-                    "yt-dl-ms-aws-auth/auth"
+                    "yt-dl-ms-aws-auth"
                 )
                 for folder in "${folders[@]}"; do
                     cd $folder

@@ -94,7 +94,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: yt-dl-ms-aws-auth
-      Handler: auth
+      Handler: yt-dl-ms-aws-auth
       Runtime: go1.x
       Architectures:
         - x86_64
