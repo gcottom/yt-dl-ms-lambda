@@ -35,6 +35,6 @@ jobs:
                 mkdir ffmpeg
                 tar -xf ffmpeg-git-amd64-static.tar.xz -C ffmpeg
                 cd ../
-                cp ./bin/ffmpeg/ffmpeg .aws-sam/build/ConvertTrackFunction/
+                cp bin/ffmpeg/ffmpeg .aws-sam/build/ConvertTrackFunction/
 
             - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name yt-dl-ms --region us-east-2
