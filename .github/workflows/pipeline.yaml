@@ -32,6 +32,7 @@ jobs:
                 mkdir bin
                 cd bin
                 wget https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz
+                mkdir ffmpeg
                 tar -xf ffmpeg-git-amd64-static.tar.xz -C ffmpeg
                 cd ../
                 cp ./bin/ffmpeg/ffmpeg .aws-sam/build/ConvertTrackFunction/
