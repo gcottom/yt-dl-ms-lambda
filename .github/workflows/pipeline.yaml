@@ -10,7 +10,6 @@ jobs:
               with:
                 go-version: '1.21'
             - uses: actions/checkout@v3
-            - run: export CGO_ENABLED=0
             - uses: aws-actions/setup-sam@v2
               with:
                 use-installer: true
@@ -28,8 +27,10 @@ jobs:
                     go mod tidy -go=1.21
                     cd ../
                 done
+            - run: |
+                export CGO_ENABLED=0
                 echo cgo: $CGO_ENABLED
-            - run: sam build
+                sam build
             - run: |
                 mkdir bin
                 cd bin
