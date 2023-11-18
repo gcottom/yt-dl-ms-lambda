@@ -27,6 +27,7 @@ jobs:
                     go mod tidy -go=1.21
                     cd ../
                 done
+                export CGO_ENABLED=0
             - run: sam build
             - run: |
                 mkdir bin
