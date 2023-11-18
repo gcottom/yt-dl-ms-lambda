@@ -26,6 +26,7 @@ func Handler(ctx context.Context, request events.APIGatewayCustomAuthorizerReque
 		return events.APIGatewayCustomAuthorizerResponse{Context: map[string]interface{}{"message": "MISSING_AUTHENTICATION_TOKEN", "error_description": "token missing", "description": "token not provided in authorization header"}}, errors.New("Missing_Authentication_Token")
 	}
 	secret := os.Getenv("JWT_SECRET")
+	fmt.Println(secret)
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil // Replace with your actual secret key
 	})
