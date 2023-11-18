@@ -6,7 +6,11 @@ jobs:
     build-deploy:
         runs-on: ubuntu-latest
         steps:
+            - uses: actions/setup-go@v2
+              with:
+                go-version: '1.21'
             - uses: actions/checkout@v3
+            - run: export CGO_ENABLED=0
             - uses: aws-actions/setup-sam@v2
               with:
                 use-installer: true
@@ -15,9 +19,6 @@ jobs:
                 aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
                 aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                 aws-region: us-east-2
-            - uses: actions/setup-go@v2
-              with:
-                go-version: '1.21'
             - run: |
                 folders=(
                     "yt-dl-ms-lambda"
@@ -27,7 +28,7 @@ jobs:
                     go mod tidy -go=1.21
                     cd ../
                 done
-                export CGO_ENABLED=0
+                echo cgo: $CGO_ENABLED
             - run: sam build
             - run: |
                 mkdir bin
