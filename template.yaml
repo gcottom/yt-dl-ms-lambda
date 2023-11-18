@@ -8,9 +8,6 @@ Globals:
   Function:
     Timeout: 30
     MemorySize: 128
-    Environment:
-        Variables:
-          JWT_SECRET: !Ref JwtSec
 
 Resources:
   MyLogGroup:
@@ -100,7 +97,9 @@ Resources:
       Runtime: go1.x
       Architectures:
         - x86_64
-      
+      Environment:
+        Variables:
+          JWT_SECRET: !Ref JwtSec
   GetTrackFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:

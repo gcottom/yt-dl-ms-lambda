@@ -6,19 +6,29 @@ jobs:
     build-deploy:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/setup-go@v2
+            - name: Setup Go
+              id: install_go
+              uses: actions/setup-go@v2
               with:
                 go-version: '1.21'
-            - uses: actions/checkout@v3
-            - uses: aws-actions/setup-sam@v2
+            - name: Checkout Repo
+              id: checkout_repo
+              uses: actions/checkout@v3
+            - name: Setup SAM
+              id: install_sam
+              uses: aws-actions/setup-sam@v2
               with:
                 use-installer: true
-            - uses: aws-actions/configure-aws-credentials@v2
+            - name: Setup AWS Credentials
+              id: set_credentials
+              uses: aws-actions/configure-aws-credentials@v2
               with:
                 aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
                 aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                 aws-region: us-east-2
-            - run: |
+            - name: Download Go Dependencies
+              id: do_go_mod_tidy
+              run: |
                 folders=(
                     "yt-dl-ms-lambda"
                 )
@@ -27,11 +37,14 @@ jobs:
                     go mod tidy -go=1.21
                     cd ../
                 done
-            - run: |
+            - name: Build SAM Template
+              id: run_sam_build
+              run: |
                 export CGO_ENABLED=0
-                echo cgo: $CGO_ENABLED
                 sam build
-            - run: |
+            - name: Copy FFMpeg
+              id: copy_ffmpeg
+              run: |
                 mkdir bin
                 cd bin
                 wget https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz
@@ -39,5 +52,6 @@ jobs:
                 tar -xf ffmpeg-git-amd64-static.tar.xz -C ffmpeg --strip-components=1
                 cd ../
                 cp bin/ffmpeg/ffmpeg .aws-sam/build/ConvertTrackFunction/
-
-            - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name yt-dl-ms --region us-east-2 --parameter-overrides JwtSec=${{ secrets.JWT_SECRET }}
+            - name: Deploy SAM Template
+              id: run_sam_deploy
+              run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name yt-dl-ms --region us-east-2 --parameter-overrides JwtSec=${{ secrets.JWT_SECRET }}
