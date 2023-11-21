@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -151,9 +152,30 @@ func ConvertTrackHandler(sqsEvent events.SQSEvent) error {
 	return nil
 }
 func GetMetaInitHandler(req Request) (*Response, error) {
+	titReg := regexp.MustCompile(`^title[\d]$`)
+	artReg := regexp.MustCompile(`^artist[\d]$`)
 	qp := req.MultiValueQueryStringParameters
 	resultMeta := []meta.TrackMeta{}
+	artTitMap := make(map[string][]string)
+	arts := make([]string, 0)
+	tits := make([]string, 0)
 	for k, v := range qp {
+		if titReg.MatchString(k) {
+			tits = append(tits, v[0])
+		}
+		if artReg.MatchString(k) {
+			arts = append(arts, v[0])
+		}
+	}
+	if len(arts) != len(tits) {
+		//1 art 2 tits case
+		artTitMap[arts[0]] = tits
+	} else {
+		artTitMap[arts[0]] = []string{tits[0]}
+		artTitMap[arts[1]] = []string{tits[1]}
+	}
+
+	for k, v := range artTitMap {
 		for _, v1 := range v {
 			tMeta, err := meta.GetMetaFromSongAndArtist(v1, k)
 			if err != nil {
