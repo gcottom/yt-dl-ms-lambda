@@ -160,13 +160,17 @@ func GetMetaInitHandler(req Request) (*Response, error) {
 	artistToTitleMap := make(map[string][]string)
 	for key, values := range parsedParams {
 		artistName := key
+		songs := ""
 		for _, value := range values {
 			decodedValue, err := url.QueryUnescape(value)
 			if err != nil {
 				return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 			}
-			artistToTitleMap[artistName] = append(artistToTitleMap[artistName], decodedValue)
+			songs = songs + decodedValue
 		}
+		sp := strings.Split(songs, "|")
+		artistToTitleMap[artistName] = append(artistToTitleMap[artistName], sp...)
+
 	}
 	resultMeta := []meta.TrackMeta{}
 	for k, v := range artistToTitleMap {
