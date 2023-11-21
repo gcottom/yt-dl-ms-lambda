@@ -168,7 +168,7 @@ func GetMetaInitHandler(req Request) (*Response, error) {
 			}
 			songs = songs + decodedValue
 		}
-		sp := strings.Split(songs, "|")
+		sp := strings.Split(songs, ",")
 		artistToTitleMap[artistName] = append(artistToTitleMap[artistName], sp...)
 
 	}
