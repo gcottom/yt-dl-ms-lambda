@@ -71,7 +71,7 @@ Resources:
       MethodSettings:
         - ResourcePath: "/*"
           HttpMethod: "*"
-          LoggingLevel: INFO
+          LoggingLevel: ALL
       AccessLogSetting:
         DestinationArn: !GetAtt MyLogGroup.Arn
         Format: $context.extendedRequestId $context.identity.sourceIp $context.identity.caller $context.identity.user [$context.requestTime] "$context.httpMethod $context.resourcePath $context.protocol" $context.status $context.responseLength $context.requestId
