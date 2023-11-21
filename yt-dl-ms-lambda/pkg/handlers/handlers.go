@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 
@@ -152,28 +151,9 @@ func ConvertTrackHandler(sqsEvent events.SQSEvent) error {
 	return nil
 }
 func GetMetaInitHandler(req Request) (*Response, error) {
-	qp := req.PathParameters["data"]
-	parsedParams, err := url.ParseQuery(qp)
-	if err != nil {
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
-	}
-	artistToTitleMap := make(map[string][]string)
-	for key, values := range parsedParams {
-		artistName := key
-		songs := ""
-		for _, value := range values {
-			decodedValue, err := url.QueryUnescape(value)
-			if err != nil {
-				return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
-			}
-			songs = songs + decodedValue
-		}
-		sp := strings.Split(songs, ",")
-		artistToTitleMap[artistName] = append(artistToTitleMap[artistName], sp...)
-
-	}
+	qp := req.MultiValueQueryStringParameters
 	resultMeta := []meta.TrackMeta{}
-	for k, v := range artistToTitleMap {
+	for k, v := range qp {
 		for _, v1 := range v {
 			tMeta, err := meta.GetMetaFromSongAndArtist(v1, k)
 			if err != nil {
