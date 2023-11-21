@@ -18,6 +18,7 @@ import (
 type ConvertResponse struct {
 	TrackData string `json:"trackdata,omitempty"`
 	FileName  string `json:"filename,omitempty"`
+	Author    string `json:"author,omitempty"`
 }
 type ConvertedResponse struct {
 	TrackConverted bool   `json:"converted,omitempty"`

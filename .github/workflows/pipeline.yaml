@@ -54,4 +54,4 @@ jobs:
                 cp bin/ffmpeg/ffmpeg .aws-sam/build/ConvertTrackFunction/
             - name: Deploy SAM Template
               id: run_sam_deploy
-              run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name yt-dl-ms --region us-east-2 --parameter-overrides JwtSec=${{ secrets.JWT_SECRET }}
+              run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name yt-dl-ms --region us-east-2 --parameter-overrides JwtSec=${{ secrets.JWT_SECRET }} SptfyCID=${{ secrets.SPOTIFY_CLIENT_ID}} SptfyCSec=${{ secrets.SPOTIFY_CLIENT_SECRET}}

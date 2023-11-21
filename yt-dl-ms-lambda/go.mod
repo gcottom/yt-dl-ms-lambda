@@ -9,6 +9,8 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.1.0
 	github.com/google/uuid v1.4.0
 	github.com/kkdai/youtube/v2 v2.9.0
+	github.com/zmb3/spotify/v2 v2.4.0
+	golang.org/x/oauth2 v0.14.0
 
 )
 
@@ -23,8 +25,12 @@ require (
 	github.com/go-flac/flacvorbis v0.2.0 // indirect
 	github.com/go-flac/go-flac v1.0.0 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/pprof v0.0.0-20231101202521-4ca4178f5c7a // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/sunfish-shogi/bufseekio v0.1.0 // indirect
+	golang.org/x/net v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 )

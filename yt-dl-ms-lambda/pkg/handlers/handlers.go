@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -34,7 +35,7 @@ type ErrorBody struct {
 func GetTrackHandler(req Request) (*Response, error) {
 	yturl := req.PathParameters["videoid"]
 	log.Println(yturl)
-	b, title, err := yt.Download(yturl)
+	b, title, author, err := yt.Download(yturl)
 	if err != nil {
 		log.Println(err.Error())
 		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
@@ -62,7 +63,7 @@ func GetTrackHandler(req Request) (*Response, error) {
 		log.Println(err)
 		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
-	return apiResponse(http.StatusOK, convert.ConvertResponse{TrackData: "https://yt-dl-ui-downloads.s3.us-east-2.amazonaws.com/yt-download-" + u.String() + "-conv", FileName: title})
+	return apiResponse(http.StatusOK, convert.ConvertResponse{TrackData: "https://yt-dl-ui-downloads.s3.us-east-2.amazonaws.com/yt-download-" + u.String() + "-conv", FileName: title, Author: author})
 }
 
 func GetTrackConvertedHandler(req Request) (*Response, error) {
@@ -150,6 +151,37 @@ func ConvertTrackHandler(sqsEvent events.SQSEvent) error {
 	}
 	return nil
 }
+func GetMetaInitHandler(req Request) (*Response, error) {
+	qp := req.PathParameters["data"]
+	parsedParams, err := url.ParseQuery(qp)
+	if err != nil {
+		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+	}
+	artistToTitleMap := make(map[string][]string)
+	for key, values := range parsedParams {
+		artistName := key
+		for _, value := range values {
+			decodedValue, err := url.QueryUnescape(value)
+			if err != nil {
+				return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+			}
+			artistToTitleMap[artistName] = append(artistToTitleMap[artistName], decodedValue)
+		}
+	}
+	resultMeta := []meta.TrackMeta{}
+	for k, v := range artistToTitleMap {
+		for _, v1 := range v {
+			tMeta, err := meta.GetMetaFromSongAndArtist(v1, k)
+			if err != nil {
+				return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+			}
+			resultMeta = append(resultMeta, tMeta...)
+		}
+	}
+	return apiResponse(http.StatusOK, meta.GetMetaResponse{Results: resultMeta})
+
+}
+
 func UnhandledMethod() (*events.APIGatewayProxyResponse, error) {
 	return apiResponse(http.StatusMethodNotAllowed, ErrorMethodNotAllowed)
 }

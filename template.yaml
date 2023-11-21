@@ -179,8 +179,36 @@ Resources:
             QueueName: !GetAtt YtDlSqs.QueueName
         - S3CrudPolicy:
             BucketName: yt-dl-ui-downloads
+  
+  GetMetaInitFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: yt-dl-ms-lambda/cmd/functions
+      Handler: get_meta_init
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          SPOTIFY_CLIENT_SECRET: !Ref SptfyCSec
+          SPOTIFY_CLIENT_ID: !Ref SptfyCID
+      Events:
+        CatchAll:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /getmetainit/{data}
+            Method: GET
+            RestApiId: !Ref YtDlApi
 Parameters:
   JwtSec:
     Type: String
     Description: Jwt Secret
+    Default: default value
+  SptfyCID:
+    Type: String
+    Description: Spotify Client ID
+    Default: default value
+  SptfyCSec:
+    Type: String
+    Description: Spotify Client Secret
     Default: default value

@@ -9,7 +9,7 @@ import (
 	"github.com/kkdai/youtube/v2"
 )
 
-func Download(id string) ([]byte, string, error) {
+func Download(id string) ([]byte, string, string, error) {
 	id = strings.Replace(id, "&feature=share", "", 1)
 	id = strings.Replace(id, "https://music.youtube.com/watch?v=", "", 1)
 	id = strings.Replace(id, "https://www.music.youtube.com/watch?v=", "", 1)
@@ -25,26 +25,27 @@ func Download(id string) ([]byte, string, error) {
 	videoInfo, err := client.GetVideo(videoID)
 	if err != nil {
 		err = fmt.Errorf("failed to get video info: %v", err)
-		return nil, "", err
+		return nil, "", "", err
 	}
 	// Find the best audio format available
 	bestFormat := getBestAudioFormat(videoInfo.Formats.Type("audio"))
 	if bestFormat == nil {
 		err = fmt.Errorf("no audio formats found for the video")
-		return nil, "", err
+		return nil, "", "", err
 	}
 	stream, _, err := client.GetStream(videoInfo, bestFormat)
 	if err != nil {
 		err = fmt.Errorf("no Stream found")
-		return nil, "", err
+		return nil, "", "", err
 	}
 	title := SanitizeFilename(videoInfo.Title)
+	author := videoInfo.Author
 	b, err := io.ReadAll(stream)
 	if err != nil {
 		err = fmt.Errorf("unable to copy stream data to file object: %v", err)
-		return nil, "", err
+		return nil, "", "", err
 	}
-	return b, title, nil
+	return b, title, author, nil
 }
 
 // getBestAudioFormat finds the best audio format from a list of formats
