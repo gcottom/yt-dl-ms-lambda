@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -151,8 +152,14 @@ func ConvertTrackHandler(sqsEvent events.SQSEvent) error {
 	return nil
 }
 func GetMetaInitHandler(req Request) (*Response, error) {
-	artist := req.PathParameters["artist"]
-	title := req.PathParameters["title"]
+	artist, err := url.PathUnescape(req.PathParameters["artist"])
+	if err != nil {
+		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+	}
+	title, err := url.PathUnescape(req.PathParameters["title"])
+	if err != nil {
+		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+	}
 	resultMeta := []meta.TrackMeta{}
 	tMeta, err := meta.GetMetaFromSongAndArtist(title, artist)
 	if err != nil {
