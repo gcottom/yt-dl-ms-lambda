@@ -47,7 +47,6 @@ func GetMetaFromSongAndArtist(songName string, artist string) ([]TrackMeta, erro
 }
 func processMeta(results *spotify.SearchResult) []TrackMeta {
 	resultMeta := []TrackMeta{}
-	resultMap := map[spotify.ID]TrackMeta{}
 	for _, track := range results.Tracks.Tracks {
 		var albumImage string
 		if len(track.Album.Images) > 0 {
@@ -60,12 +59,8 @@ func processMeta(results *spotify.SearchResult) []TrackMeta {
 		}
 		artist = artist[:(strings.LastIndex(artist, ", "))] + strings.Replace(artist[(strings.LastIndex(artist, ", ")):], ", ", "", 1)
 		song := track.Name
-		id := track.ID
 		outMeta := TrackMeta{albumImage, album, artist, song, "", "", ""}
-		resultMap[id] = outMeta
-	}
-	for _, v := range resultMap {
-		resultMeta = append(resultMeta, v)
+		resultMeta = append(resultMeta, outMeta)
 	}
 
 	return resultMeta
