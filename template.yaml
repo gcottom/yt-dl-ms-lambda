@@ -71,7 +71,7 @@ Resources:
       MethodSettings:
         - ResourcePath: "/*"
           HttpMethod: "*"
-          LoggingLevel: ALL
+          LoggingLevel: INFO
       AccessLogSetting:
         DestinationArn: !GetAtt MyLogGroup.Arn
         Format: $context.extendedRequestId $context.identity.sourceIp $context.identity.caller $context.identity.user [$context.requestTime] "$context.httpMethod $context.resourcePath $context.protocol" $context.status $context.responseLength $context.requestId
@@ -196,7 +196,7 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /getmetainit
+            Path: /getmetainit/{artist}/{title}
             Method: GET
             RestApiId: !Ref YtDlApi
 Parameters:
