@@ -59,7 +59,7 @@ func processMeta(results *spotify.SearchResult) []TrackMeta {
 		}
 		artist = artist[:(strings.LastIndex(artist, ", "))] + strings.Replace(artist[(strings.LastIndex(artist, ", ")):], ", ", "", 1)
 		song := track.Name
-		outMeta := TrackMeta{albumImage, album, artist, song, "", "", ""}
+		outMeta := TrackMeta{Title: song, AlbumArt: albumImage, Album: album, Artist: artist}
 		resultMeta = append(resultMeta, outMeta)
 	}
 
