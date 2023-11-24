@@ -2,6 +2,7 @@ package meta
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 
@@ -36,6 +37,7 @@ func GetMetaFromSongAndArtist(songName string, artist string) ([]TrackMeta, erro
 		return nil, err
 	}
 	searchTerm := "track:" + songName + " artist:" + artist
+	fmt.Println("Search term: " + searchTerm)
 	httpClient := spotifyauth.New().Client(ctx, token)
 	client := spotify.New(httpClient)
 	results, err := client.Search(ctx, searchTerm, spotify.SearchTypeTrack)
@@ -59,6 +61,7 @@ func processMeta(results *spotify.SearchResult) []TrackMeta {
 		}
 		artist = artist[:(strings.LastIndex(artist, ", "))] + strings.Replace(artist[(strings.LastIndex(artist, ", ")):], ", ", "", 1)
 		song := track.Name
+		fmt.Println("Found artist: " + artist + ", track: " + song)
 		outMeta := TrackMeta{Title: song, AlbumArt: albumImage, Album: album, Artist: artist}
 		resultMeta = append(resultMeta, outMeta)
 	}
