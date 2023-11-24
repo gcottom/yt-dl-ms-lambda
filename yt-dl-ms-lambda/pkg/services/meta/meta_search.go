@@ -35,7 +35,7 @@ func GetMetaFromSongAndArtist(songName string, artist string) ([]TrackMeta, erro
 	if err != nil {
 		return nil, err
 	}
-	searchTerm := songName + "artist:" + artist
+	searchTerm := "track:" + songName + " artist:" + artist
 	httpClient := spotifyauth.New().Client(ctx, token)
 	client := spotify.New(httpClient)
 	results, err := client.Search(ctx, searchTerm, spotify.SearchTypeTrack)
