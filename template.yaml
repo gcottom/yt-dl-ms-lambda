@@ -112,7 +112,7 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /gettrack/{videoid}
+            Path: /tracks/{videoid}
             Method: GET
             RestApiId: !Ref YtDlApi
       Policies:
@@ -133,7 +133,7 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /gettrackconverted/{s3id}
+            Path: /converted/{s3id}
             Method: GET
             RestApiId: !Ref YtDlApi
       Policies:
@@ -152,7 +152,7 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /setmeta
+            Path: /meta
             Method: PUT
             RestApiId: !Ref YtDlApi
       Policies:
@@ -196,7 +196,7 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /getmetainit/{artist}/{title}
+            Path: /meta/{artist}/{title}
             Method: GET
             RestApiId: !Ref YtDlApi
 Parameters:
