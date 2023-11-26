@@ -180,7 +180,7 @@ Resources:
         - S3CrudPolicy:
             BucketName: yt-dl-ui-downloads
   
-  GetMetaInitFunction:
+  GetMetaFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: yt-dl-ms-lambda/cmd/functions
