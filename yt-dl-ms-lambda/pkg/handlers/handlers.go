@@ -35,7 +35,7 @@ func GetTrackHandler(req Request) (*Response, error) {
 	yturl := req.PathParameters["videoid"]
 	log.Println(yturl)
 	//if track already exists, don't download it from yt again, just use the cached file
-	if convert.TrackConverted(yturl + "-conv") {
+	if convert.TrackConverted("yt-download-" + yturl + "-conv") {
 		title, author, err := yt.GetInfo(yturl)
 		if err != nil {
 			log.Println(err)
