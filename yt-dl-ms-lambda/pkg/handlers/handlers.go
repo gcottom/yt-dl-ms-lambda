@@ -20,7 +20,6 @@ import (
 	"github.com/gcottom/yt-dl-ms-lambda/pkg/services/convert"
 	"github.com/gcottom/yt-dl-ms-lambda/pkg/services/meta"
 	"github.com/gcottom/yt-dl-ms-lambda/pkg/services/yt"
-	"github.com/google/uuid"
 )
 
 var ErrorMethodNotAllowed = "method Not allowed"
@@ -35,13 +34,21 @@ type ErrorBody struct {
 func GetTrackHandler(req Request) (*Response, error) {
 	yturl := req.PathParameters["videoid"]
 	log.Println(yturl)
+	//if track already exists, don't download it from yt again, just use the cached file
+	if convert.TrackConverted(yturl + "-conv") {
+		title, author, err := yt.GetInfo(yturl)
+		if err != nil {
+			log.Println(err)
+			return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		}
+		return apiResponse(http.StatusOK, convert.ConvertResponse{TrackData: "https://yt-dl-ui-downloads.s3.us-east-2.amazonaws.com/yt-download-" + yturl + "-conv", FileName: title, Author: author})
+	}
 	b, title, author, err := yt.Download(yturl)
 	if err != nil {
 		log.Println(err.Error())
 		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
-	u := uuid.New()
-	err = convert.Upload(b, u.String())
+	err = convert.Upload(b, yturl)
 	if err != nil {
 		log.Println(err)
 		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
@@ -56,14 +63,14 @@ func GetTrackHandler(req Request) (*Response, error) {
 	}
 	_, err = sqsClient.SendMessage(&sqs.SendMessageInput{
 		QueueUrl:       &queueUrl,
-		MessageBody:    aws.String(u.String()),
+		MessageBody:    aws.String(yturl),
 		MessageGroupId: aws.String("convertGroup"),
 	})
 	if err != nil {
 		log.Println(err)
 		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
-	return apiResponse(http.StatusOK, convert.ConvertResponse{TrackData: "https://yt-dl-ui-downloads.s3.us-east-2.amazonaws.com/yt-download-" + u.String() + "-conv", FileName: title, Author: author})
+	return apiResponse(http.StatusOK, convert.ConvertResponse{TrackData: "https://yt-dl-ui-downloads.s3.us-east-2.amazonaws.com/yt-download-" + yturl + "-conv", FileName: title, Author: author})
 }
 
 func GetTrackConvertedHandler(req Request) (*Response, error) {
@@ -151,7 +158,7 @@ func ConvertTrackHandler(sqsEvent events.SQSEvent) error {
 	}
 	return nil
 }
-func GetMetaInitHandler(req Request) (*Response, error) {
+func GetMetaHandler(req Request) (*Response, error) {
 	artist, err := url.PathUnescape(req.PathParameters["artist"])
 	if err != nil {
 		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})

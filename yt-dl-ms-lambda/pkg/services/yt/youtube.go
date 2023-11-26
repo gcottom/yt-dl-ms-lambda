@@ -4,18 +4,11 @@ import (
 	"fmt"
 	"io"
 	"regexp"
-	"strings"
 
 	"github.com/kkdai/youtube/v2"
 )
 
 func Download(id string) ([]byte, string, string, error) {
-	id = strings.Replace(id, "&feature=share", "", 1)
-	id = strings.Replace(id, "https://music.youtube.com/watch?v=", "", 1)
-	id = strings.Replace(id, "https://www.music.youtube.com/watch?v=", "", 1)
-	id = strings.Replace(id, "https://www.youtube.com/watch?v", "", 1)
-	id = strings.Replace(id, "https://youtube.com/watch?v", "", 1)
-	id = strings.Split(id, "&")[0]
 	videoID := id // Replace with the YouTube video ID you want to download
 
 	// Create a new YouTube client
@@ -40,6 +33,7 @@ func Download(id string) ([]byte, string, string, error) {
 	}
 	title := SanitizeFilename(videoInfo.Title)
 	author := videoInfo.Author
+
 	b, err := io.ReadAll(stream)
 	if err != nil {
 		err = fmt.Errorf("unable to copy stream data to file object: %v", err)
@@ -76,4 +70,20 @@ func SanitizeFilename(fileName string) string {
 	fileName = regexp.MustCompile(`\s+`).ReplaceAllString(fileName, " ")
 
 	return fileName
+}
+func GetInfo(id string) (string, string, error) {
+	videoID := id // Replace with the YouTube video ID you want to download
+
+	// Create a new YouTube client
+	client := youtube.Client{}
+
+	// Get the video info
+	videoInfo, err := client.GetVideo(videoID)
+	if err != nil {
+		err = fmt.Errorf("failed to get video info: %v", err)
+		return "", "", err
+	}
+	title := SanitizeFilename(videoInfo.Title)
+	author := videoInfo.Author
+	return title, author, nil
 }
