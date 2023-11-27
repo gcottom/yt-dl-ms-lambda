@@ -9,6 +9,9 @@ import (
 func GetArtistTitleCombos(filename, author string) map[string][]string {
 	filename = strings.ReplaceAll(filename, ":", "-")
 	t, c := pSanitize(filename)
+	if c == "" && strings.Contains(strings.ToLower(t), "by") && !strings.HasSuffix(strings.ToLower(t), "by") {
+		c = strings.Split(t, "by")[1]
+	}
 	return artistTitleSplit(t, c, author)
 }
 
@@ -57,7 +60,9 @@ func artistTitleSplit(s, c, a string) map[string][]string {
 		sp := strings.Split(s, "-")
 		//cover artist overrides original artist
 		if c != "" && len(sp) == 2 {
-			m[strings.Trim(sanitizeAuthor(c), " ")] = []string{strings.Trim(sp[0], " "), strings.Trim(sp[1], " ")}
+			m[strings.Trim(sanitizeAuthor(c), " ")] = []string{strings.Trim(sp[0], " "), strings.Trim(sp[1], " "), strings.Trim(sp[0]+"-"+sp[1], " ")}
+			m[strings.Trim(sanitizeAuthor(sp[0]), " ")] = []string{strings.Trim(sp[1], " ")}
+			m[strings.Trim(sanitizeAuthor(sp[1]), " ")] = []string{strings.Trim(sp[0], " ")}
 			return m
 		}
 		//artist - title case
