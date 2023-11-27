@@ -59,6 +59,9 @@ func artistTitleSplit(s, c, a string) map[string][]string {
 		sp := strings.Split(s, "-")
 		var bsp string
 		for _, sp1 := range sp {
+			if strings.Contains(sp1, "cover by") {
+				bsp = strings.Split(sp1, "cover by")[0]
+			}
 			if strings.Contains(sp1, "by") {
 				bsp = strings.Split(sp1, "by")[0]
 				break
@@ -67,7 +70,7 @@ func artistTitleSplit(s, c, a string) map[string][]string {
 		//cover artist overrides original artist
 		if c != "" && len(sp) == 2 {
 			m[strings.Trim(sanitizeAuthor(c), " ")] = []string{strings.Trim(sp[0], " "), strings.Trim(sp[1], " "), strings.Trim(sp[0]+"-"+sp[1], " ")}
-			if bsp != "" {
+			if strings.Trim(bsp, " ") != "" {
 				m[strings.Trim(sanitizeAuthor(c), " ")] = append(m[strings.Trim(sanitizeAuthor(c), " ")], strings.Trim(bsp, " "))
 			}
 			if !strings.EqualFold(strings.Trim(sanitizeAuthor(c), " "), strings.Trim(sp[0], " ")) {
@@ -86,6 +89,9 @@ func artistTitleSplit(s, c, a string) map[string][]string {
 				m[sanitizeAuthor(strings.Trim(sp[0], " "))] = []string{strings.Trim(sp[1], " ")}
 				m[sanitizeAuthor(strings.Trim(a, " "))] = []string{strings.Trim(sp[0]+"-"+sp[1], " ")}
 			}
+			if strings.Trim(bsp, " ") != "" {
+				m[strings.Trim(sanitizeAuthor(a), " ")] = append(m[strings.Trim(sanitizeAuthor(a), " ")], strings.Trim(bsp, " "))
+			}
 			m[sanitizeAuthor(strings.Trim(sp[1], " "))] = []string{strings.Trim(sp[0], " ")}
 			return m
 		}
@@ -96,7 +102,10 @@ func artistTitleSplit(s, c, a string) map[string][]string {
 				m[sanitizeAuthor(strings.Trim(sp[0], " "))] = []string{strings.Trim(sp[1]+"-"+sp[2], " "), strings.Trim(sp[0]+"-"+sp[1]+"-"+sp[2], " ")}
 			} else {
 				m[sanitizeAuthor(strings.Trim(sp[0], " "))] = []string{strings.Trim(sp[1]+"-"+sp[2], " ")}
-				m[sanitizeAuthor(strings.Trim(a, " "))] = []string{strings.Trim(sp[0]+"-"+sp[1]+"-"+sp[2], " ")}
+				m[sanitizeAuthor(strings.Trim(a, " "))] = []string{strings.Trim(sp[0]+"-"+sp[1]+"-"+sp[2], " "), strings.Trim(sp[0], " "), strings.Trim(sp[1], " "), strings.Trim(sp[2], " ")}
+			}
+			if strings.Trim(bsp, " ") != "" {
+				m[strings.Trim(sanitizeAuthor(a), " ")] = append(m[strings.Trim(sanitizeAuthor(a), " ")], strings.Trim(bsp, " "))
 			}
 			m[sanitizeAuthor(strings.Trim(sp[0]+"-"+sp[1], " "))] = []string{strings.Trim(sp[2], " ")}
 			m[sanitizeAuthor(strings.Trim(sp[1]+"-"+sp[2], " "))] = []string{strings.Trim(sp[0], " ")}
@@ -117,12 +126,16 @@ func artistTitleSplit(s, c, a string) map[string][]string {
 		return m
 	}
 	m[strings.Trim(sanitizeAuthor(a), " ")] = []string{s}
-	if strings.Contains(s, "by") {
+	if strings.Contains(s, "cover by") {
+		m[strings.Trim(sanitizeAuthor(a), " ")] = append(m[strings.Trim(sanitizeAuthor(a), " ")], strings.Trim(strings.Split(s, "cover by")[0], " "))
+	} else if strings.Contains(s, "by") {
 		m[strings.Trim(sanitizeAuthor(a), " ")] = append(m[strings.Trim(sanitizeAuthor(a), " ")], strings.Trim(strings.Split(s, "by")[0], " "))
 	}
 	if strings.Trim(sanitizeAuthor(c), " ") != "" && strings.Trim(sanitizeAuthor(c), " ") != strings.Trim(sanitizeAuthor(a), " ") {
 		m[strings.Trim(sanitizeAuthor(c), " ")] = []string{s}
-		if strings.Contains(s, "by") {
+		if strings.Contains(s, "cover by") {
+			m[strings.Trim(sanitizeAuthor(c), " ")] = append(m[strings.Trim(sanitizeAuthor(c), " ")], strings.Trim(strings.Split(s, "cover by")[0], " "))
+		} else if strings.Contains(s, "by") {
 			m[strings.Trim(sanitizeAuthor(c), " ")] = append(m[strings.Trim(sanitizeAuthor(c), " ")], strings.Trim(strings.Split(s, "by")[0], " "))
 		}
 	}
