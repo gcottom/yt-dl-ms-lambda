@@ -12,14 +12,14 @@ import (
 )
 
 type TrackMeta struct {
-	Title    string `json:"title,omitempty"`
-	Artist   string `json:"artist,omitempty"`
-	Album    string `json:"album,omitempty"`
-	AlbumArt string `json:"albumart,omitempty"`
-	Genre    string `json:"genre,omitempty"`
-	Year     string `json:"year,omitempty"`
-	Bpm      string `json:"bpm,omitempty"`
-	ID       spotify.ID
+	Title    string     `json:"title,omitempty"`
+	Artist   string     `json:"artist,omitempty"`
+	Album    string     `json:"album,omitempty"`
+	AlbumArt string     `json:"albumart,omitempty"`
+	Genre    string     `json:"genre,omitempty"`
+	Year     string     `json:"year,omitempty"`
+	Bpm      string     `json:"bpm,omitempty"`
+	ID       spotify.ID `json:"id,omitempty"`
 }
 
 type GetMetaResponse struct {
