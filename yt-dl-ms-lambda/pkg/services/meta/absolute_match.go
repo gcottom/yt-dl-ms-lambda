@@ -2,6 +2,7 @@ package meta
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -35,7 +36,7 @@ func check_match(art, tit, mart string, r TrackMeta) (found bool, result TrackMe
 	absolute_match := TrackMeta{}
 	//check if there is a match for artist and title combo. perform feat stripping on the
 	//title to ensure that false negatives are less likely
-	if strings.EqualFold(art, mart) && (strings.EqualFold(tit, r.Title) || strings.EqualFold(strings.Trim(featStripping(tit), " "), strings.Trim(featStripping(r.Title), " "))) {
+	if strings.EqualFold(art, mart) && (strings.EqualFold(tit, r.Title) || strings.EqualFold(strings.Trim(saniParens(featStripping(tit)), " "), strings.Trim(saniParens(featStripping(r.Title)), " "))) {
 		absolute_match.Artist = r.Artist
 		absolute_match.Album = r.Album
 		absolute_match.AlbumArt = r.AlbumArt
@@ -44,4 +45,10 @@ func check_match(art, tit, mart string, r TrackMeta) (found bool, result TrackMe
 		return true, absolute_match
 	}
 	return false, absolute_match
+}
+func saniParens(s string) string {
+	inparReg := regexp.MustCompile(`\([^)]*\)`)
+	san := inparReg.ReplaceAllString(s, "")
+	san = strings.ReplaceAll(san, "  ", " ")
+	return san
 }
