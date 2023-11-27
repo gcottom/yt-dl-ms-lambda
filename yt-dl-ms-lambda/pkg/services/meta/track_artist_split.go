@@ -9,9 +9,6 @@ import (
 func GetArtistTitleCombos(filename, author string) map[string][]string {
 	filename = strings.ReplaceAll(filename, ":", "-")
 	t, c := pSanitize(filename)
-	if c == "" && strings.Contains(strings.ToLower(t), "by") && !strings.HasSuffix(strings.ToLower(t), "by") {
-		c = strings.Split(t, "by")[1]
-	}
 	return artistTitleSplit(t, c, author)
 }
 
@@ -56,13 +53,29 @@ func artistTitleSplit(s, c, a string) map[string][]string {
 	s = emojiReg.ReplaceAllString(s, "")
 	c = emojiReg.ReplaceAllString(c, "")
 	a = emojiReg.ReplaceAllString(a, "")
+
+	s = strings.ToLower(s)
 	if strings.Contains(s, "-") {
 		sp := strings.Split(s, "-")
+		var bsp string
+		for _, sp1 := range sp {
+			if strings.Contains(sp1, "by") {
+				bsp = strings.Split(sp1, "by")[0]
+				break
+			}
+		}
 		//cover artist overrides original artist
 		if c != "" && len(sp) == 2 {
 			m[strings.Trim(sanitizeAuthor(c), " ")] = []string{strings.Trim(sp[0], " "), strings.Trim(sp[1], " "), strings.Trim(sp[0]+"-"+sp[1], " ")}
-			m[strings.Trim(sanitizeAuthor(sp[0]), " ")] = []string{strings.Trim(sp[1], " ")}
-			m[strings.Trim(sanitizeAuthor(sp[1]), " ")] = []string{strings.Trim(sp[0], " ")}
+			if bsp != "" {
+				m[strings.Trim(sanitizeAuthor(c), " ")] = append(m[strings.Trim(sanitizeAuthor(c), " ")], strings.Trim(bsp, " "))
+			}
+			if !strings.EqualFold(strings.Trim(sanitizeAuthor(c), " "), strings.Trim(sp[0], " ")) {
+				m[strings.Trim(sanitizeAuthor(sp[0]), " ")] = []string{strings.Trim(sp[1], " ")}
+			}
+			if !strings.EqualFold(strings.Trim(sanitizeAuthor(c), " "), strings.Trim(sp[1], " ")) {
+				m[strings.Trim(sanitizeAuthor(sp[1]), " ")] = []string{strings.Trim(sp[0], " ")}
+			}
 			return m
 		}
 		//artist - title case
@@ -103,9 +116,15 @@ func artistTitleSplit(s, c, a string) map[string][]string {
 
 		return m
 	}
-	m[sanitizeAuthor(a)] = []string{s}
-	if c != "" {
-		m[c] = []string{s}
+	m[strings.Trim(sanitizeAuthor(a), " ")] = []string{s}
+	if strings.Contains(s, "by") {
+		m[strings.Trim(sanitizeAuthor(a), " ")] = append(m[strings.Trim(sanitizeAuthor(a), " ")], strings.Trim(strings.Split(s, "by")[0], " "))
+	}
+	if strings.Trim(sanitizeAuthor(c), " ") != "" && strings.Trim(sanitizeAuthor(c), " ") != strings.Trim(sanitizeAuthor(a), " ") {
+		m[strings.Trim(sanitizeAuthor(c), " ")] = []string{s}
+		if strings.Contains(s, "by") {
+			m[strings.Trim(sanitizeAuthor(c), " ")] = append(m[strings.Trim(sanitizeAuthor(c), " ")], strings.Trim(strings.Split(s, "by")[0], " "))
+		}
 	}
 
 	return m
