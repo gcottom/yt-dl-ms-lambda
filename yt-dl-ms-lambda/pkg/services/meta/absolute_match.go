@@ -33,7 +33,7 @@ func Find_absolute_match(tMeta []TrackMeta, art, tit string) (found bool, result
 }
 func check_match(art, tit, mart string, r TrackMeta) (found bool, result TrackMeta) {
 	absolute_match := TrackMeta{}
-	if strings.EqualFold(art, mart) && strings.EqualFold(tit, r.Title) {
+	if strings.EqualFold(art, mart) && (strings.EqualFold(tit, r.Title) || strings.EqualFold(strings.Trim(featStripping(tit), " "), strings.Trim(featStripping(r.Title), " "))) {
 		absolute_match.Artist = r.Artist
 		absolute_match.Album = r.Album
 		absolute_match.AlbumArt = r.AlbumArt
