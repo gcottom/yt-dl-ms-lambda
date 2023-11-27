@@ -19,10 +19,13 @@ type TrackMeta struct {
 	Genre    string `json:"genre,omitempty"`
 	Year     string `json:"year,omitempty"`
 	Bpm      string `json:"bpm,omitempty"`
+	ID       spotify.ID
 }
 
 type GetMetaResponse struct {
-	Results []TrackMeta `json:"results,omitempty"`
+	AbsoluteMatchFound bool        `json:"absoluteMatchFound"`
+	AbsoluteMatchMeta  TrackMeta   `json:"absoluteMatchMeta"`
+	Results            []TrackMeta `json:"results,omitempty"`
 }
 
 func GetMetaFromSongAndArtist(songName string, artist string) ([]TrackMeta, error) {
@@ -61,8 +64,10 @@ func processMeta(results *spotify.SearchResult) []TrackMeta {
 		}
 		artist = artist[:(strings.LastIndex(artist, ", "))] + strings.Replace(artist[(strings.LastIndex(artist, ", ")):], ", ", "", 1)
 		song := track.Name
+		id := track.ID
 		fmt.Println("Found artist: " + artist + ", track: " + song)
-		outMeta := TrackMeta{Title: song, AlbumArt: albumImage, Album: album, Artist: artist}
+		outMeta := TrackMeta{Title: song, AlbumArt: albumImage, Album: album, Artist: artist, ID: id}
+
 		resultMeta = append(resultMeta, outMeta)
 	}
 

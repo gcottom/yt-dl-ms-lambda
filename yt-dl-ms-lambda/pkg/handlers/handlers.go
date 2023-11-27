@@ -159,15 +159,43 @@ func ConvertTrackHandler(sqsEvent events.SQSEvent) error {
 	return nil
 }
 func GetMetaHandler(req Request) (*Response, error) {
-	artist, err := url.PathUnescape(req.PathParameters["artist"])
-	if err != nil {
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
-	}
-	title, err := url.PathUnescape(req.PathParameters["title"])
-	if err != nil {
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
-	}
 	resultMeta := []meta.TrackMeta{}
+	if req.QueryStringParameters["ams"] == "true" {
+		author, err := url.QueryUnescape(req.QueryStringParameters["author"])
+		if err != nil {
+			return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		}
+		title, err := url.QueryUnescape(req.QueryStringParameters["title"])
+		if err != nil {
+			return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		}
+		m := meta.GetArtistTitleCombos(title, author)
+		for art, v := range m {
+			for _, tit := range v {
+				tMeta, err := meta.GetMetaFromSongAndArtist(tit, art)
+				if err != nil {
+					return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+				}
+				absolute_match_found, absolute_match := meta.Find_absolute_match(tMeta, art, tit)
+				if absolute_match_found {
+					return apiResponse(http.StatusOK, meta.GetMetaResponse{AbsoluteMatchFound: true, AbsoluteMatchMeta: absolute_match})
+				}
+				resultMeta = append(resultMeta, tMeta...)
+			}
+		}
+		resultMeta = meta.Filter_results(resultMeta)
+		return apiResponse(http.StatusOK, meta.GetMetaResponse{AbsoluteMatchFound: false, Results: resultMeta})
+	}
+
+	artist, err := url.QueryUnescape(req.QueryStringParameters["artist"])
+	if err != nil {
+		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+	}
+	title, err := url.QueryUnescape(req.QueryStringParameters["title"])
+	if err != nil {
+		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+	}
+
 	tMeta, err := meta.GetMetaFromSongAndArtist(title, artist)
 	if err != nil {
 		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
