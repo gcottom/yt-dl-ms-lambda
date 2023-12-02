@@ -6,12 +6,15 @@ import (
 	"strings"
 )
 
+// Gets the map of possible artist-title combos
 func GetArtistTitleCombos(filename, author string) map[string][]string {
 	filename = strings.ReplaceAll(filename, ":", "-")
 	t, c := pSanitize(filename)
-	return artistTitleSplit(t, c, author)
+	return deduplicateTitles(artistTitleSplit(t, c, author))
 }
 
+// Removes parenthesis and values within them.
+// Checks for cover artist within the parenthesis.
 func pSanitize(s string) (sanitizedTrack, coverArtist string) {
 	inparReg := regexp.MustCompile(`\([^)]*\)`)
 	inpar := inparReg.FindAllStringSubmatch(s, -1)
@@ -145,16 +148,9 @@ func artistTitleSplit(s, c, a string) map[string][]string {
 }
 func sanitizeAuthor(a string) string {
 	a = strings.ToLower(a)
-	a = strings.ReplaceAll(a, " - official", "")
-	a = strings.ReplaceAll(a, "-official", "")
-	a = strings.ReplaceAll(a, "official", "")
-	a = strings.ReplaceAll(a, " - vevo", "")
-	a = strings.ReplaceAll(a, "-vevo", "")
-	a = strings.ReplaceAll(a, "vevo", "")
-	a = strings.ReplaceAll(a, "@", "")
-	a = strings.ReplaceAll(a, " - topic", "")
-	a = strings.ReplaceAll(a, "-topic", "")
-	a = strings.ReplaceAll(a, "topic", "")
+
+	r := regexp.MustCompile(` - official|-official|official| - vevo|-vevo|vevo|@| - topic|-topic|topic`)
+	a = r.ReplaceAllString(a, "")
 	a = strings.Trim(a, " ")
 	return a
 }
@@ -205,4 +201,27 @@ func atStripping(s string) string {
 		return s
 	}
 	return s
+}
+
+func deduplicateTitles(m map[string][]string) map[string][]string {
+	//split map into key-value pairs
+	for k, v := range m {
+		//create a temp map
+		t := map[string]int{}
+		//loop through values in v
+		for _, v1 := range v {
+			//put each value in v (v1) in a map (deduplicates the slice)
+			t[v1] = 0
+		}
+		//create a temp slice of strings
+		l := []string{}
+		//loop through the values in the temp map
+		//and add them to the temp slice of strings
+		for t1, _ := range t {
+			l = append(l, t1)
+		}
+		//replace the current value of v in m with the deduplicated slice of stri
+		m[k] = l
+	}
+	return m
 }

@@ -49,7 +49,8 @@ func getBestAudioFormat(formats youtube.FormatList) *youtube.Format {
 
 	for _, format := range formats {
 		if format.Bitrate > maxBitrate {
-			bestFormat = &format
+			best := format
+			bestFormat = &best
 			maxBitrate = format.Bitrate
 		}
 	}
