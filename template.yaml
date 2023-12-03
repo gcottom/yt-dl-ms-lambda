@@ -148,6 +148,7 @@ Resources:
       Runtime: go1.x
       Architectures:
         - x86_64
+      MemorySize: 1000
       Events:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
