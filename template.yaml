@@ -167,7 +167,7 @@ Resources:
       Runtime: go1.x
       Architectures:
         - x86_64
-      MemorySize: 1739
+      MemorySize: 3478
       Events:
         SQSMessagePublished:
           Type: SQS
