@@ -34,7 +34,7 @@ func Handler(ctx context.Context, request events.APIGatewayCustomAuthorizerReque
 	if err != nil {
 		fmt.Println("Error parsing JWT:", err)
 		pol := generatePolicy("user", "Deny", request.MethodArn)
-		return events.APIGatewayCustomAuthorizerResponse{PrincipalID: pol.PrincipalID, PolicyDocument: pol.PolicyDocument, Context: map[string]interface{}{"message": "UNAUTHORIZED", "error_description": "token invalid", "description": "error parsing jwt"}}, nil
+		return events.APIGatewayCustomAuthorizerResponse{PrincipalID: pol.PrincipalID, PolicyDocument: pol.PolicyDocument, Context: map[string]interface{}{"message": "UNAUTHORIZED", "error_description": "token invalid", "description": "error parsing jwt, " + err.Error()}}, nil
 	}
 	exp, err := token.Claims.GetExpirationTime()
 	if err != nil {
