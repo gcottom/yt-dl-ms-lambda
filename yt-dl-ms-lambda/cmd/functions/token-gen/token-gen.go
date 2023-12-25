@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"net/http"
 	"os"
 
@@ -35,10 +36,13 @@ type TokenResponse struct {
 
 func getToken(req events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	secret := os.Getenv("JWT_SECRET")
-	alg := os.Getenv("ALG")
+	alg, err := base64.StdEncoding.DecodeString(os.Getenv("ALG"))
+	if err != nil {
+		return nil, err
+	}
 	t := req.QueryStringParameters["t"]
 	v := req.QueryStringParameters["v"]
-	expression, err := govaluate.NewEvaluableExpression(alg)
+	expression, err := govaluate.NewEvaluableExpression(string(alg))
 	if err != nil {
 		return nil, err
 	}
