@@ -88,7 +88,6 @@ Resources:
             Identity:
               Header: Authorization
             FunctionInvokeRole: !GetAtt CustomJWTAuthFunctionRole.Arn
-          NoAuth: NONE
         AddDefaultAuthorizerToCorsPreflight: False
   AuthTokenGenerator:
     Type: AWS::Serverless:Function
@@ -99,7 +98,7 @@ Resources:
       Architectures:
         - x86_64
       Auth:
-        Authorizer: NoAuth
+        Authorizer: NONE
       Environment:
         Variables:
           JWT_SECRET: !Ref JwtSec
