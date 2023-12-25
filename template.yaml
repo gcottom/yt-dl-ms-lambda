@@ -238,4 +238,4 @@ Parameters:
   TGAlg:
     Type: String
     Description: Algorithm for token generation
-    Default: default valueß
+    Default: default value
