@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -40,7 +41,10 @@ func getToken(req events.APIGatewayProxyRequest) (*events.APIGatewayProxyRespons
 	if err != nil {
 		return nil, err
 	}
-	t := req.QueryStringParameters["t"]
+	t, err := strconv.Atoi(req.QueryStringParameters["t"])
+	if err != nil {
+		return nil, err
+	}
 	v := req.QueryStringParameters["v"]
 	expression, err := govaluate.NewEvaluableExpression(string(alg))
 	if err != nil {
