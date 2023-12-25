@@ -92,7 +92,8 @@ Resources:
         AddDefaultAuthorizerToCorsPreflight: False
   AuthTokenGenerator:
     Type: AWS::Serverless:Function
-    Properties: yt-dl-ms-lambda/cmd/functions
+    Properties:
+      CodeUri: yt-dl-ms-lambda/cmd/functions
       Handler: token-gen
       Runtime: go1.x
       Architectures:
