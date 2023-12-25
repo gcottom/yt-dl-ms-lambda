@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/base64"
-	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -40,22 +39,18 @@ func getToken(req events.APIGatewayProxyRequest) (*events.APIGatewayProxyRespons
 	secret := os.Getenv("JWT_SECRET")
 	alg, err := base64.StdEncoding.DecodeString(os.Getenv("ALG"))
 	if err != nil {
-		fmt.Println(err, "43")
 		return nil, err
 	}
 	t, err := strconv.Atoi(req.QueryStringParameters["t"])
 	if err != nil {
-		fmt.Println(err, "48")
 		return nil, err
 	}
 	v, err := strconv.Atoi(req.QueryStringParameters["v"])
 	if err != nil {
-		fmt.Println(err, "53")
 		return nil, err
 	}
 	expression, err := govaluate.NewEvaluableExpression(string(alg))
 	if err != nil {
-		fmt.Println(err, "58")
 		return nil, err
 	}
 	parameters := make(map[string]interface{}, 8)
@@ -63,7 +58,6 @@ func getToken(req events.APIGatewayProxyRequest) (*events.APIGatewayProxyRespons
 
 	result, err := expression.Evaluate(parameters)
 	if err != nil {
-		fmt.Println(err, "66")
 		return nil, err
 	}
 	if int(result.(float64)) == v {
@@ -76,17 +70,15 @@ func getToken(req events.APIGatewayProxyRequest) (*events.APIGatewayProxyRespons
 		claims["user"] = "yt-dl-ui"
 		nonce, err := uuid.NewRandom()
 		if err != nil {
-			fmt.Println(err, "79")
 			return handlers.ApiResponse(http.StatusBadRequest, handlers.ErrorBody{aws.String(err.Error())})
 		}
 		claims["nonce"] = nonce.String()
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		tokenString, err := token.SignedString([]byte(secret))
 		if err != nil {
-			fmt.Println(err, "86")
 			return handlers.ApiResponse(http.StatusBadRequest, handlers.ErrorBody{aws.String(err.Error())})
 		}
 		return handlers.ApiResponse(http.StatusOK, TokenResponse{tokenString})
 	}
-	return handlers.ApiResponse(http.StatusBadRequest, handlers.ErrorBody{aws.String(err.Error())})
+	return handlers.ApiResponse(http.StatusBadRequest, handlers.ErrorBody{aws.String("Security Validation Failed")})
 }
