@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -39,23 +40,33 @@ func getToken(req events.APIGatewayProxyRequest) (*events.APIGatewayProxyRespons
 	secret := os.Getenv("JWT_SECRET")
 	alg, err := base64.StdEncoding.DecodeString(os.Getenv("ALG"))
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	t, err := strconv.Atoi(req.QueryStringParameters["t"])
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
-	v := req.QueryStringParameters["v"]
+	v, err := strconv.Atoi(req.QueryStringParameters["v"])
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
 	expression, err := govaluate.NewEvaluableExpression(string(alg))
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	parameters := make(map[string]interface{}, 8)
 	parameters["t"] = t
-	parameters["v"] = v
 
 	result, err := expression.Evaluate(parameters)
-	if result == true {
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	if int(result.(float64)) == v {
 		claims := jwt.MapClaims{}
 		now := time.Now()
 		claims["exp"] = jwt.NewNumericDate(now.Add(300 * time.Second))
@@ -65,12 +76,14 @@ func getToken(req events.APIGatewayProxyRequest) (*events.APIGatewayProxyRespons
 		claims["user"] = "yt-dl-ui"
 		nonce, err := uuid.NewRandom()
 		if err != nil {
+			fmt.Println(err)
 			return handlers.ApiResponse(http.StatusBadRequest, handlers.ErrorBody{aws.String(err.Error())})
 		}
 		claims["nonce"] = nonce.String()
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		tokenString, err := token.SignedString(secret)
 		if err != nil {
+			fmt.Println(err)
 			return handlers.ApiResponse(http.StatusBadRequest, handlers.ErrorBody{aws.String(err.Error())})
 		}
 		return handlers.ApiResponse(http.StatusOK, TokenResponse{tokenString})
