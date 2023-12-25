@@ -63,7 +63,21 @@ Resources:
         Path: /
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
-  4ET,OPTIONS,PUT'"
+  YtDlApi:
+    Type: AWS::Serverless::Api
+    DependsOn: ApiCWLRoleArn
+    Properties:
+      StageName: Prod
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          LoggingLevel: INFO
+      AccessLogSetting:
+        DestinationArn: !GetAtt MyLogGroup.Arn
+        Format: $context.extendedRequestId $context.identity.sourceIp $context.identity.caller $context.identity.user [$context.requestTime] "$context.httpMethod $context.resourcePath $context.protocol" $context.status $context.responseLength $context.requestId
+      Cors:
+        AllowOrigin: "'*'"
+        AllowMethods: "'GET,OPTIONS,PUT'"
         AllowHeaders: "'Authorization'"
       Auth:
         DefaultAuthorizer: LambdaTokenAuthorizer
