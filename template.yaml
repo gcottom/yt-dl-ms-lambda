@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  yt-dl-ms-app
+Description: yt-dl-ms-app
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -89,16 +88,16 @@ Resources:
               Header: Authorization
             FunctionInvokeRole: !GetAtt CustomJWTAuthFunctionRole.Arn
         AddDefaultAuthorizerToCorsPreflight: False
-  AuthTokenGenerator:
-    Type: AWS::Serverless:Function
+  AuthTokenGeneratorFunction:
+    Type: AWS::Serverless::Function
+    Auth:
+        Authorizer: NONE
     Properties:
       CodeUri: yt-dl-ms-lambda/cmd/functions
-      Handler: token-gen
+      Handler: token_gen
       Runtime: go1.x
       Architectures:
         - x86_64
-      Auth:
-        Authorizer: NONE
       Environment:
         Variables:
           JWT_SECRET: !Ref JwtSec
