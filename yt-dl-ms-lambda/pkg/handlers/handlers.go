@@ -39,19 +39,19 @@ func GetTrackHandler(req Request) (*Response, error) {
 		title, author, err := yt.GetInfo(yturl)
 		if err != nil {
 			log.Println(err)
-			return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+			return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 		}
-		return apiResponse(http.StatusOK, convert.ConvertResponse{TrackData: "https://yt-dl-ui-downloads.s3.us-east-2.amazonaws.com/yt-download-" + yturl + "-conv", FileName: title, Author: author})
+		return ApiResponse(http.StatusOK, convert.ConvertResponse{TrackData: "https://yt-dl-ui-downloads.s3.us-east-2.amazonaws.com/yt-download-" + yturl + "-conv", FileName: title, Author: author})
 	}
 	b, title, author, err := yt.Download(yturl)
 	if err != nil {
 		log.Println(err.Error())
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
 	err = convert.Upload(b, yturl)
 	if err != nil {
 		log.Println(err)
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
 	queueUrl := "https://sqs.us-east-2.amazonaws.com/112343695294/yt-dl-ms-conversion.fifo"
 	conf := aws.Config{Region: aws.String(conf.Region)}
@@ -59,7 +59,7 @@ func GetTrackHandler(req Request) (*Response, error) {
 	sqsClient := sqs.New(sess)
 	if err != nil {
 		log.Println(err)
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
 	_, err = sqsClient.SendMessage(&sqs.SendMessageInput{
 		QueueUrl:       &queueUrl,
@@ -68,17 +68,17 @@ func GetTrackHandler(req Request) (*Response, error) {
 	})
 	if err != nil {
 		log.Println(err)
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
-	return apiResponse(http.StatusOK, convert.ConvertResponse{TrackData: "https://yt-dl-ui-downloads.s3.us-east-2.amazonaws.com/yt-download-" + yturl + "-conv", FileName: title, Author: author})
+	return ApiResponse(http.StatusOK, convert.ConvertResponse{TrackData: "https://yt-dl-ui-downloads.s3.us-east-2.amazonaws.com/yt-download-" + yturl + "-conv", FileName: title, Author: author})
 }
 
 func GetTrackConvertedHandler(req Request) (*Response, error) {
 	s3id := req.PathParameters["s3id"]
 	if !convert.TrackConverted(s3id) {
-		return apiResponse(http.StatusOK, convert.ConvertedResponse{TrackConverted: false, Error: "File Conversion Not Completed Yet!"})
+		return ApiResponse(http.StatusOK, convert.ConvertedResponse{TrackConverted: false, Error: "File Conversion Not Completed Yet!"})
 	}
-	return apiResponse(http.StatusOK, convert.ConvertedResponse{TrackConverted: true, TrackData: "https://yt-dl-ui-downloads.s3.us-east-2.amazonaws.com/yt-download-" + s3id})
+	return ApiResponse(http.StatusOK, convert.ConvertedResponse{TrackConverted: true, TrackData: "https://yt-dl-ui-downloads.s3.us-east-2.amazonaws.com/yt-download-" + s3id})
 }
 
 func SetMetaHandler(req Request) (*Response, error) {
@@ -87,7 +87,7 @@ func SetMetaHandler(req Request) (*Response, error) {
 	err := json.Unmarshal([]byte(req.Body), &reqdata)
 	if err != nil {
 		log.Println("Error unmarshalling json")
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
 	objectKey := strings.ReplaceAll(reqdata.TrackUrl, "https://yt-dl-ui-downloads.s3.us-east-2.amazonaws.com/yt-download-", "")
 	key := fmt.Sprintf("yt-download-%s", objectKey)
@@ -97,7 +97,7 @@ func SetMetaHandler(req Request) (*Response, error) {
 	file, err := os.Create(temppath)
 	if err != nil {
 		log.Println("Error creating temp file")
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
 	defer file.Close()
 
@@ -111,13 +111,13 @@ func SetMetaHandler(req Request) (*Response, error) {
 	})
 	if err != nil {
 		log.Println("Error downloading file")
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
 
 	trackWithMeta, sanTrackName, err := meta.SaveMeta(temppath, reqdata.Title, reqdata.Artist, reqdata.Album, reqdata.AlbumArt)
 	if err != nil {
 		log.Println("Error saving meta")
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
 
 	uploader := s3manager.NewUploader(sess)
@@ -128,10 +128,10 @@ func SetMetaHandler(req Request) (*Response, error) {
 	})
 	if err != nil {
 		log.Println("Error uploading to S3")
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
 
-	return apiResponse(http.StatusOK, meta.SetTrackMetaResponse{FileName: sanTrackName})
+	return ApiResponse(http.StatusOK, meta.SetTrackMetaResponse{FileName: sanTrackName})
 }
 func ConvertTrackHandler(sqsEvent events.SQSEvent) error {
 	for _, r := range sqsEvent.Records {
@@ -163,49 +163,49 @@ func GetMetaHandler(req Request) (*Response, error) {
 	if req.QueryStringParameters["ams"] == "true" {
 		author, err := url.QueryUnescape(req.QueryStringParameters["author"])
 		if err != nil {
-			return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+			return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 		}
 		title, err := url.QueryUnescape(req.QueryStringParameters["title"])
 		if err != nil {
-			return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+			return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 		}
 		m := meta.GetArtistTitleCombos(title, author)
 		for art, v := range m {
 			for _, tit := range v {
 				tMeta, err := meta.GetMetaFromSongAndArtist(tit, art)
 				if err != nil {
-					return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+					return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 				}
 				absolute_match_found, absolute_match := meta.Find_absolute_match(tMeta, art, tit)
 				if absolute_match_found {
-					return apiResponse(http.StatusOK, meta.GetMetaResponse{AbsoluteMatchFound: true, AbsoluteMatchMeta: absolute_match})
+					return ApiResponse(http.StatusOK, meta.GetMetaResponse{AbsoluteMatchFound: true, AbsoluteMatchMeta: absolute_match})
 				}
 				resultMeta = append(resultMeta, tMeta...)
 			}
 		}
 		resultMeta = meta.Filter_results(resultMeta)
-		return apiResponse(http.StatusOK, meta.GetMetaResponse{AbsoluteMatchFound: false, Results: resultMeta})
+		return ApiResponse(http.StatusOK, meta.GetMetaResponse{AbsoluteMatchFound: false, Results: resultMeta})
 	}
 
 	artist, err := url.QueryUnescape(req.QueryStringParameters["artist"])
 	if err != nil {
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
 	title, err := url.QueryUnescape(req.QueryStringParameters["title"])
 	if err != nil {
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
 
 	tMeta, err := meta.GetMetaFromSongAndArtist(title, artist)
 	if err != nil {
-		return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
+		return ApiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 	}
 	resultMeta = append(resultMeta, tMeta...)
 
-	return apiResponse(http.StatusOK, meta.GetMetaResponse{Results: resultMeta})
+	return ApiResponse(http.StatusOK, meta.GetMetaResponse{Results: resultMeta})
 
 }
 
 func UnhandledMethod() (*events.APIGatewayProxyResponse, error) {
-	return apiResponse(http.StatusMethodNotAllowed, ErrorMethodNotAllowed)
+	return ApiResponse(http.StatusMethodNotAllowed, ErrorMethodNotAllowed)
 }

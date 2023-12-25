@@ -3,10 +3,12 @@ module github.com/gcottom/yt-dl-ms-lambda
 go 1.21
 
 require (
+	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/aws/aws-lambda-go v1.41.0
 	github.com/aws/aws-sdk-go v1.48.3
 	github.com/gcottom/audiometa v1.2.5
 	github.com/golang-jwt/jwt/v5 v5.1.0
+	github.com/google/uuid v1.4.0
 	github.com/kkdai/youtube/v2 v2.9.0
 	github.com/zmb3/spotify/v2 v2.4.0
 	golang.org/x/oauth2 v0.14.0
@@ -26,7 +28,6 @@ require (
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/pprof v0.0.0-20231101202521-4ca4178f5c7a // indirect
-	github.com/google/uuid v1.4.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/sunfish-shogi/bufseekio v0.1.0 // indirect
 	golang.org/x/text v0.14.0 // indirect

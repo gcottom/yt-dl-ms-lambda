@@ -89,6 +89,26 @@ Resources:
               Header: Authorization
             FunctionInvokeRole: !GetAtt CustomJWTAuthFunctionRole.Arn
         AddDefaultAuthorizerToCorsPreflight: False
+  AuthTokenGenerator:
+    Type: AWS::Serverless:Function
+    Properties: yt-dl-ms-lambda/cmd/functions
+      Handler: token-gen
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Auth:
+        Authorizer: NONE
+      Environment:
+        Variables:
+          JWT_SECRET: !Ref JwtSec
+          ALG: !Ref TGAlg
+      Events:
+        CatchAll:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /token
+            Method: GET
+            RestApiId: !Ref YtDlApi
   JWTAuthFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -213,3 +233,7 @@ Parameters:
     Type: String
     Description: Spotify Client Secret
     Default: default value
+  TGAlg:
+    Type: String
+    Description: Algorithm for token generation
+    Default: default valueß
