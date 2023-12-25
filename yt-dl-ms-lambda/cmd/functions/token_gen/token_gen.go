@@ -81,7 +81,7 @@ func getToken(req events.APIGatewayProxyRequest) (*events.APIGatewayProxyRespons
 		}
 		claims["nonce"] = nonce.String()
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-		tokenString, err := token.SignedString(secret)
+		tokenString, err := token.SignedString([]byte(secret))
 		if err != nil {
 			fmt.Println(err, "86")
 			return handlers.ApiResponse(http.StatusBadRequest, handlers.ErrorBody{aws.String(err.Error())})
